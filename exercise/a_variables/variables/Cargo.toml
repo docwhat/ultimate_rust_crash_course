@@ -1,0 +1,9 @@
+[package]
+authors = ["Christian Höltje <docwhat@gerf.org>"]
+edition = "2018"
+name = "variables"
+version = "2.3.4"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]

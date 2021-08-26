@@ -1,8 +1,9 @@
 // Silence some warnings so they don't distract from the exercise.
 #![allow(dead_code, unused_variables)]
 
-mod lib;
-use lib::*;
+// mod lib;
+// use lib::*;
+use ding_machine::*;
 
 fn main() {
     let coords: (f32, f32) = (6.3, 15.0);

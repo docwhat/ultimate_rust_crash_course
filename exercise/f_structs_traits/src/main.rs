@@ -9,7 +9,7 @@ use std::fmt;
 //  trait Bite...
 
 trait Bite {
-    fn bite(self: &mut Self);
+    fn bite(&mut self);
 }
 
 // 2. Now create a struct named Grapes with a field that tracks how many grapes are left.  If you
@@ -36,7 +36,7 @@ impl std::fmt::Debug for Grapes {
 // impl Bite for...
 
 impl Bite for Grapes {
-    fn bite(self: &mut Self) {
+    fn bite(&mut self) {
         self.amount_left -= 1;
     }
 }
@@ -91,7 +91,7 @@ impl fmt::Display for Carrot {
 }
 
 impl Bite for Carrot {
-    fn bite(self: &mut Self) {
+    fn bite(&mut self) {
         // Eat 20% of the remaining carrot. It may take awhile to eat it all...
         self.percent_left *= 0.8;
     }

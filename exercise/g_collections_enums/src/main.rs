@@ -18,6 +18,15 @@ enum Shot {
 }
 
 impl Shot {
+    fn new_from_distance_from_center(distance: f64) -> Self {
+        use Shot::*;
+        match distance {
+            x if x < 1.0 => Bullseye,
+            x if x < 5.0 => Hit(x),
+            _ => Miss,
+        }
+    }
+
     // Here is a method for the `Shot` enum you just defined.
     fn points(self) -> i32 {
         use Shot::*;
@@ -50,14 +59,7 @@ fn main() {
     //      - Between 1.0 and 5.0 -- `Shot::Hit(value)`
     //      - Greater than 5.0 -- `Shot::Miss`
     for coord in arrow_coords {
-        let distance_from_center = coord.distance_from_center();
-        let shot = if distance_from_center < 1.0 {
-            Shot::Bullseye
-        } else if distance_from_center < 5.0 {
-            Shot::Hit(distance_from_center)
-        } else {
-            Shot::Miss
-        };
+        let shot = Shot::new_from_distance_from_center(coord.distance_from_center());
         shots.push(shot);
         print!("Scored {}; ", shot.points());
         coord.print_description();

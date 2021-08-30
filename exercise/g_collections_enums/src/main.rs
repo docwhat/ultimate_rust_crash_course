@@ -10,14 +10,32 @@
 //
 // You will need to complete 1b as well before you will be able to run this program successfully.
 
+#[derive(Copy, Clone)]
+enum Shot {
+    Bullseye,
+    Hit(f64),
+    Miss,
+}
+
 impl Shot {
     // Here is a method for the `Shot` enum you just defined.
     fn points(self) -> i32 {
-        // 1b. Implement this method to convert a Shot into points
-        // - return 5 points if `self` is a `Shot::Bullseye`
-        // - return 2 points if `self` is a `Shot::Hit(x)` where x < 3.0
-        // - return 1 point if `self` is a `Shot::Hit(x)` where x >= 3.0
-        // - return 0 points if `self` is a Miss
+        match self {
+            // 1b. Implement this method to convert a Shot into points
+            // - return 5 points if `self` is a `Shot::Bullseye`
+            // - return 2 points if `self` is a `Shot::Hit(x)` where x < 3.0
+            // - return 1 point if `self` is a `Shot::Hit(x)` where x >= 3.0
+            // - return 0 points if `self` is a Miss
+            Shot::Bullseye => 5,
+            Shot::Hit(distance) => {
+                if distance < 3.0 {
+                    2
+                } else {
+                    1
+                }
+            }
+            _ => 0,
+        }
     }
 }
 
@@ -34,9 +52,26 @@ fn main() {
     //      - Less than 1.0 -- `Shot::Bullseye`
     //      - Between 1.0 and 5.0 -- `Shot::Hit(value)`
     //      - Greater than 5.0 -- `Shot::Miss`
+    for coord in arrow_coords {
+        let distance_from_center = coord.distance_from_center();
+        let shot = if distance_from_center < 1.0 {
+            Shot::Bullseye
+        } else if distance_from_center < 5.0 {
+            Shot::Hit(distance_from_center)
+        } else {
+            Shot::Miss
+        };
+        shots.push(shot);
+        print!("Scored {}; ", shot.points());
+        coord.print_description();
+    }
 
-
-    let mut total = 0;
+    // let mut total = 0;
+    let total = shots
+        .into_iter()
+        .map(|s| s.points())
+        .reduce(|a, b| a + b)
+        .unwrap();
     // 3. Finally, loop through each shot in shots and add its points to total
 
     println!("Final point total is: {}", total);
@@ -58,9 +93,9 @@ impl Coord {
             "coord is {:.1} away, at ({:.1}, {:.1})",
             self.distance_from_center(),
             self.x,
-            self.y);
+            self.y
+        );
     }
-
 }
 
 // Generate some random coordinates

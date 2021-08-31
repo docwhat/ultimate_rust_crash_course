@@ -1,6 +1,8 @@
 // Silence some warnings so they don't distract from the exercise.
 #![allow(dead_code, unused_imports, unused_variables)]
 use crossbeam::channel;
+use std::array;
+use std::iter;
 use std::thread;
 use std::time::Duration;
 
@@ -15,10 +17,7 @@ fn expensive_sum(v: Vec<i32>) -> i32 {
     // In the closures for both the .filter() and .map() the argument will be a reference, so you'll
     // either need to dereference the argument once in the parameter list like this: `|&x|` or you
     // will need to dereference it each time you use it in the expression like this: `*x`
-    v.iter()
-        // .filter() goes here
-        // .map() goes here
-        .sum()
+    v.iter().filter(|&x| x % 2 == 0).map(|&x| x * x).sum()
 }
 
 fn pause_ms(ms: u64) {
@@ -32,7 +31,7 @@ fn main() {
     // join handle in a variable called `handle`. Once you've done this you should be able to run
     // the code and see the Child thread output in the middle of the main thread's letters
     //
-    //let handle = ...
+    let handle = thread::spawn(|| expensive_sum(my_vector));
 
     // While the child thread is running, the main thread will also do some work
     for letter in vec!["a", "b", "c", "d", "e", "f"] {
@@ -45,8 +44,8 @@ fn main() {
     // to exit with a `Result<i32, Err>`.  Get the i32 out of the result and store it in a `sum`
     // variable.  Uncomment the println.  If you did 1a and 1b correctly, the sum should be 20.
     //
-    //let sum =
-    //println!("The child thread's expensive sum is {}", sum);
+    let sum: i32 = handle.join().unwrap();
+    println!("The child thread's expensive sum is {}", sum);
 
     // Time for some fun with threads and channels!  Though there is a primitive type of channel
     // in the std::sync::mpsc module, I recommend always using channels from the crossbeam crate,
@@ -56,27 +55,28 @@ fn main() {
     // flow of execution works.  Once you understand it, alter the values passed to the `pause_ms()`
     // calls so that both the "Thread B" outputs occur before the "Thread A" outputs.
 
-    /*
     let (tx, rx) = channel::unbounded();
     // Cloning a channel makes another variable connected to that end of the channel so that you can
     // send it to another thread.
     let tx2 = tx.clone();
 
     let handle_a = thread::spawn(move || {
-        pause_ms(0);
+        pause_ms(100);
         tx2.send("Thread A: 1").unwrap();
         pause_ms(200);
         tx2.send("Thread A: 2").unwrap();
     });
 
-    pause_ms(100); // Make sure Thread A has time to get going before we spawn Thread B
+    // pause_ms(100); // Make sure Thread A has time to get going before we spawn Thread B
 
     let handle_b = thread::spawn(move || {
         pause_ms(0);
         tx.send("Thread B: 1").unwrap();
-        pause_ms(200);
+        pause_ms(20);
         tx.send("Thread B: 2").unwrap();
     });
+
+    pause_ms(10);
 
     // Using a Receiver channel as an iterator is a convenient way to get values until the channel
     // gets closed.  A Receiver channel is automatically closed once all Sender channels have been
@@ -89,12 +89,37 @@ fn main() {
     // Join the child threads for good hygiene.
     handle_a.join().unwrap();
     handle_b.join().unwrap();
-    */
 
     // Challenge: Make two child threads and give them each a receiving end to a channel.  From the
     // main thread loop through several values and print each out and then send it to the channel.
     // On the child threads print out the values you receive. Close the sending side in the main
     // thread by calling `drop(tx)` (assuming you named your sender channel variable `tx`).  Join
     // the child threads.
+
+    let (tx, rx) = channel::unbounded();
+    let rx2 = rx.clone();
+
+    let handle_a = thread::spawn(move || {
+        for msg in rx {
+            pause_ms(100);
+            println!(" thread A received {}", msg);
+        }
+    });
+
+    let handle_b = thread::spawn(move || {
+        for msg in rx2 {
+            println!(" thread B received {}", msg);
+            pause_ms(100);
+        }
+    });
+
+    for idx in 0..20 {
+        tx.send(format!("narf {}", idx)).unwrap();
+    }
+    drop(tx);
+
+    handle_a.join().unwrap();
+    handle_b.join().unwrap();
+
     println!("Main thread: Exiting.")
 }

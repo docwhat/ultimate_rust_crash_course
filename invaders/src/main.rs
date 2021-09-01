@@ -33,13 +33,13 @@ fn main() -> Result<(), Box<dyn Error>> {
     let render_handle = thread::spawn(move || {
         let mut last_frame: Frame = new_frame();
         let mut stdout = io::stdout();
-        render::render(&mut stdout, &last_frame, &last_frame, true);
+        render::clear_and_render(&mut stdout, &last_frame);
         loop {
             let curr_frame = match render_rx.recv() {
                 Ok(x) => x,
                 Err(_) => break,
             };
-            render::render(&mut stdout, &last_frame, &curr_frame, false);
+            render::render(&mut stdout, &last_frame, &curr_frame);
             last_frame = curr_frame;
         }
     });

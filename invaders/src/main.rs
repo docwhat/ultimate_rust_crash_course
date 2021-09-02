@@ -54,6 +54,8 @@ fn main() -> Result<(), Box<dyn Error>> {
         instant = Instant::now();
         let mut curr_frame: Frame = new_frame();
 
+        // TODO: Why doesn't this respond to multiple key presses? e.g., left and space-bar?
+
         // Input
         while event::poll(Duration::default())? {
             if let Event::Key(key_event) = event::read()? {

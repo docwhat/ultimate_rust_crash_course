@@ -35,13 +35,9 @@ fn main() -> Result<(), Box<dyn Error>> {
         let mut last_frame: Frame = new_frame();
         let mut stdout = io::stdout();
         render::clear_and_render(&mut stdout, &last_frame);
-        loop {
-            let curr_frame = match render_rx.recv() {
-                Ok(x) => x,
-                Err(_) => break,
-            };
-            render::render(&mut stdout, &last_frame, &curr_frame);
-            last_frame = curr_frame;
+        while let Ok(current_frame) = render_rx.recv() {
+            render::render(&mut stdout, &last_frame, &current_frame);
+            last_frame = current_frame;
         }
     });
 

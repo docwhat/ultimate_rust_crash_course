@@ -1,4 +1,8 @@
-use std::{error::Error, io, thread, time::Duration};
+use std::{
+    error::Error,
+    io, thread,
+    time::{Duration, Instant},
+};
 
 use crossbeam::channel;
 use crossterm::{
@@ -43,18 +47,24 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     // Game loop
     let mut player = Player::new();
+    let mut instant = Instant::now();
     'gameloop: loop {
         // Per-frame init
+        let delta = instant.elapsed();
+        instant = Instant::now();
         let mut curr_frame: Frame = new_frame();
 
         // Input
         while event::poll(Duration::default())? {
             if let Event::Key(key_event) = event::read()? {
                 match key_event.code {
-                    KeyCode::Left => player.move_left(),
-                    KeyCode::Right => player.move_right(),
-                    KeyCode::Char('h') => player.move_left(),
-                    KeyCode::Char('l') => player.move_right(),
+                    KeyCode::Left | KeyCode::Char('h') => player.move_left(),
+                    KeyCode::Right | KeyCode::Char('l') => player.move_right(),
+                    KeyCode::Char(' ') | KeyCode::Enter => {
+                        if player.shoot() {
+                            audio.play("pew");
+                        }
+                    }
                     KeyCode::Esc | KeyCode::Char('q') => {
                         audio.play("lose");
                         break 'gameloop;
@@ -63,6 +73,9 @@ fn main() -> Result<(), Box<dyn Error>> {
                 }
             }
         }
+
+        // Updates
+        player.update(delta);
 
         // Draw & render
         player.draw(&mut curr_frame);
